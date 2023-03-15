@@ -1,39 +1,41 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import { toast } from 'react-toastify';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { parseCallbackUrl } from 'helpers/helpers';
+import { useRouter } from 'next/navigation';
+import { useFormik } from 'formik';
+import { loginValidate } from '../../lib/validate';
 
 export default function Index() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
   const router = useRouter();
-  const params = useSearchParams();
-  const callBackUrl = params.get('callbackUrl');
+  // formik hook
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: ''
+    },
+    validate: loginValidate,
+    onSubmit
+  });
 
-  const submitHandler = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
+  /**
+   * haleykennedy@gmail.com
+   * admin123
+   */
 
-    const data = await signIn('credentials', {
-      email,
-      password,
-      callbackUrl: callBackUrl ? parseCallbackUrl(callBackUrl) : '/'
+  async function onSubmit(values: { email: string; password: string; }) {
+    const status = await signIn('credentials', {
+      redirect: false,
+      email: values.email,
+      password: values.password,
+      callbackUrl: '/'
     });
 
-    if (data?.error) {
-      toast.error(data?.error);
-    }
-
-    if (data?.ok) {
-      router.push('/');
-    }
-  };
+    if (status?.ok) router.push(status.url ?? '/');
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -52,7 +54,7 @@ export default function Index() {
             Sign in to your account
           </h2>
         </div>
-        <form onSubmit={submitHandler} className="mt-8 space-y-6">
+        <form onSubmit={formik.handleSubmit} className="mt-8 space-y-6">
           <input type="hidden" name="remember" defaultValue="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -61,11 +63,9 @@ export default function Index() {
               </label>
               <input
                 id="email-address"
-                name="email"
                 type="email"
                 autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...formik.getFieldProps('email')}
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email"
@@ -77,11 +77,9 @@ export default function Index() {
               </label>
               <input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...formik.getFieldProps('password')}
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"

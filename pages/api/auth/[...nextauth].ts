@@ -1,30 +1,31 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 export default NextAuth({
+  jwt: {
+    
+  },
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "email", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'email', type: 'text', placeholder: 'jsmith' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
         // Add logic here to look up the user from the credentials supplied
 
-        const res = await fetch("http://localhost:3333/access", {
-          method: "POST",
+        const res = await fetch('http://localhost:3333/access', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             email: credentials?.email,
-            password: credentials?.password,
-          }),
+            password: credentials?.password
+          })
         });
 
-        console.log(res);
-        
         const user = await res.json();
 
         if (user) {
@@ -36,10 +37,10 @@ export default NextAuth({
 
           // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
         }
-      },
-    }),
+      }
+    })
   ],
   session: {
-    strategy: "jwt"
+    strategy: 'jwt'
   },
 });
