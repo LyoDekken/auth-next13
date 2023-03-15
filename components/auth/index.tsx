@@ -27,14 +27,14 @@ export default function Index() {
    */
 
   async function onSubmit(values: { email: string; password: string; }) {
-    const status = await signIn('credentials', {
+    const status = await signIn('Credentials', {
       redirect: false,
       email: values.email,
       password: values.password,
-      callbackUrl: '/'
+      callbackUrl: '/dashboard'
     });
 
-    if (status?.ok) router.push(status.url ?? '/');
+    if (status?.ok) router.push(status.url ?? '/dashboard');
   }
 
   return (

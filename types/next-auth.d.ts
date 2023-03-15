@@ -1,11 +1,11 @@
 // eslint-disable-next-line unused-imports/no-unused-imports
-import NextAuth from "next-auth";
+import NextAuth from 'next-auth';
 
 enum Role {
   user,
   admin,
-  colaborator,
-};
+  colaborator
+}
 
 declare module 'next-auth' {
   interface Session {
@@ -15,7 +15,7 @@ declare module 'next-auth' {
       email: string;
       avatar_url: string;
       role: Role;
-      accessToken: string;
     };
+    token: string;
   }
 }

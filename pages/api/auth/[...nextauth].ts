@@ -2,19 +2,17 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
 export default NextAuth({
-  jwt: {
-    
-  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'email', type: 'text', placeholder: 'jsmith' },
-        password: { label: 'Password', type: 'password' }
+        email: { type: 'email', placeholder: 'Email' },
+        password: {
+          type: 'password',
+          placeholder: 'Password'
+        }
       },
-      async authorize(credentials) {
-        // Add logic here to look up the user from the credentials supplied
-
+      async authorize(credentials, req) {
         const res = await fetch('http://localhost:3333/access', {
           method: 'POST',
           headers: {
@@ -26,11 +24,14 @@ export default NextAuth({
           })
         });
 
-        const user = await res.json();
+        const { token, user } = await res.json();
 
         if (user) {
           // Any object returned will be saved in `user` property of the JWT
-          return user;
+          return {
+            ...user,
+            jwt: token
+          };
         } else {
           // If you return null then an error will be displayed advising the user to check their details.
           return null;
@@ -40,7 +41,13 @@ export default NextAuth({
       }
     })
   ],
-  session: {
-    strategy: 'jwt'
-  },
+  callbacks: {
+    async jwt({ token, user }) {
+      return { ...token, ...user };
+    },
+    async session({ session, token, user }) {
+      session.user = token as any;
+      return session;
+    }
+  }
 });
